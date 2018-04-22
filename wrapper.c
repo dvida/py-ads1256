@@ -52,7 +52,7 @@ static PyObject *adc_start(PyObject *self, PyObject *args)
 
 static PyObject *adc_read_channel(PyObject *self, PyObject *args)
 {
-
+    int i;
     int ch;
     long int retorno;
     PyObject *yerr_obj;
@@ -64,9 +64,10 @@ static PyObject *adc_read_channel(PyObject *self, PyObject *args)
         return NULL;
                                        
 
-    /* execute the code */ 
+    
     retorno = readChannel(ch);
-    return Py_BuildValue("l",retorno);
+    
+    return Py_BuildValue("l", retorno);
 }
 
 
