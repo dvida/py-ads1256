@@ -32,7 +32,7 @@ PyMODINIT_FUNC initads1256(void)
 static PyObject *adc_start(PyObject *self, PyObject *args)
 {
 
-    char * ganho, *sps;
+    char *ganho, *sps;
     PyObject *yerr_obj;
     double v[8];
     int value ;

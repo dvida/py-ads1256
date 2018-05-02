@@ -3,8 +3,8 @@ from __future__ import print_function, division
 import ads1256
 import time,random
 
+import numpy as np
 import matplotlib
-
 import matplotlib.pyplot as plt
 
 # Initializes the ADC using py-ads1256 library function 
@@ -15,14 +15,18 @@ import matplotlib.pyplot as plt
 # SPS values:   500, 1000,  2000,  3750,  7500,  15000,  30000
 ads1256.start("1","30000")
 
-channel = 1
+channel = 0
+n_samples = 5000
 
 # Performs the reading of ADC channel 0
 time_prev = time.time()
+first_time = time_prev
+
 values = []
 times = []
 time_diffs = []
-for i in range(1000):
+
+for i in range(n_samples):
 		
 		
     # For some reason 8 values are repeated, so take only one
@@ -42,12 +46,15 @@ for i in range(1000):
     
 
 #print(zip(times, values))
-print(time_diffs)
+print("SPS:", n_samples/(time.time() - first_time))
 
-plt.plot(times, values, marker='+')
+plt.plot(np.array(times) - first_time, values, marker='+')
 plt.xlabel('UNIX timestamp (s)')
 plt.ylabel('ADU')
+plt.ylim(0, 2**23)
 plt.show()
+
+
 
 # Stop the ADC
 ads1256.stop()

@@ -855,7 +855,7 @@ int  adcStart(int argc, char *par1, char *par2, char *par3)
    
    // Nao faz nada se passar poucos argumentos
    if( argc != 4 ) {                                
-      printf("Este programa requer 3 parametros: canal, ganho e datarate.\n");  
+      printf("3 parameters are required: channel, gain and datarate.\n");  
    }
 
 
@@ -1025,6 +1025,7 @@ long int readChannel(long int ch){
     for (i = 0; i < 4; i++)
     {
         while((ADS1256_Scan() == 0));
+        bsp_DelayUS(1);	
     }
     
     ChValue =  (long) ADS1256_GetAdc(ch);
