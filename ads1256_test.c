@@ -728,20 +728,22 @@ void ADS1256_ISR(void)
 
 		ADS1256_WriteCmd(CMD_WAKEUP);
 		bsp_DelayUS(25);
+        
+        g_tADS1256.AdcNow[g_tADS1256.Channel] = ADS1256_ReadData();
 
-		if (g_tADS1256.Channel == 0)
-		{
-			g_tADS1256.AdcNow[3] = ADS1256_ReadData();	
-		}
-		else
-		{
-			g_tADS1256.AdcNow[g_tADS1256.Channel-1] = ADS1256_ReadData();	
-		}
+		//~ if (g_tADS1256.Channel == 0)
+		//~ {
+			//~ g_tADS1256.AdcNow[3] = ADS1256_ReadData();	
+		//~ }
+		//~ else
+		//~ {
+			//~ g_tADS1256.AdcNow[g_tADS1256.Channel-1] = ADS1256_ReadData();	
+		//~ }
 
-		if (++g_tADS1256.Channel >= 4)
-		{
-			g_tADS1256.Channel = 0;
-		}
+		//~ if (++g_tADS1256.Channel >= 4)
+		//~ {
+			//~ g_tADS1256.Channel = 0;
+		//~ }
 	}
 }
 
@@ -834,7 +836,7 @@ int  adcStart(int argc, char *par1, char *par2, char *par3)
     bcm2835_spi_begin();
     bcm2835_spi_setBitOrder(BCM2835_SPI_BIT_ORDER_LSBFIRST );     // The default
     bcm2835_spi_setDataMode(BCM2835_SPI_MODE1);                   // The default
-    bcm2835_spi_setClockDivider(BCM2835_SPI_CLOCK_DIVIDER_256); // THE DEFAULT IS 1024!!!!!! The ADC is faster, but may become unstable at lower values
+    bcm2835_spi_setClockDivider(BCM2835_SPI_CLOCK_DIVIDER_1024); // THE DEFAULT IS 1024!!!!!! The ADC is faster, but may become unstable at lower values
     bcm2835_gpio_fsel(SPICS, BCM2835_GPIO_FSEL_OUTP);//
     bcm2835_gpio_write(SPICS, HIGH);
     bcm2835_gpio_fsel(DRDY, BCM2835_GPIO_FSEL_INPT);
@@ -1022,11 +1024,11 @@ long int readChannel(long int ch){
     int i;
     
     // 4 values are repeated in the differential mode
-    for (i = 0; i < 4; i++)
-    {
-        while((ADS1256_Scan() == 0));
-        bsp_DelayUS(1);	
-    }
+    // for (i = 0; i < 4; i++)
+    // {
+    while((ADS1256_Scan() == 0));
+    bsp_DelayUS(1);	
+    // }
     
     ChValue =  (long) ADS1256_GetAdc(ch);
 	 
