@@ -386,6 +386,38 @@ void ADS1256_CfgADC(ADS1256_GAIN_E _gain, ADS1256_DRATE_E _drate)
 	}
 
 	bsp_DelayUS(50);
+    
+    // NOTE: Manually set to channel 0
+    g_tADS1256.Channel = 0;
+    
+    if (g_tADS1256.ScanMode == 0)	/*  0  Single-ended input  8 channel£¬ 1 Differential input  4 channe */
+	{
+
+		ADS1256_SetChannal(g_tADS1256.Channel);	/*Switch channel mode */
+		bsp_DelayUS(5);
+
+		ADS1256_WriteCmd(CMD_SYNC);
+		bsp_DelayUS(5);
+
+		ADS1256_WriteCmd(CMD_WAKEUP);
+		bsp_DelayUS(25);
+
+	}
+	else	/*DiffChannal*/
+	{
+		
+		ADS1256_SetDiffChannal(g_tADS1256.Channel);	/* change DiffChannal */
+		bsp_DelayUS(5);
+
+		ADS1256_WriteCmd(CMD_SYNC);
+		bsp_DelayUS(5);
+
+		ADS1256_WriteCmd(CMD_WAKEUP);
+		bsp_DelayUS(25);
+        
+	}
+    
+    bsp_DelayUS(50);
 }
 
 
@@ -749,6 +781,56 @@ void ADS1256_ISR(void)
 
 /*
 *********************************************************************************************************
+*	name: ADS1256_ISR
+*	function: Collection procedures
+*	parameter: NULL
+*	The return value:  NULL
+*********************************************************************************************************
+*/
+void ADS1256_ISR_Channel(void)
+{
+	if (g_tADS1256.ScanMode == 0)	/*  0  Single-ended input  8 channel£¬ 1 Differential input  4 channe */
+	{
+
+
+		if (g_tADS1256.Channel == 0)
+		{
+			g_tADS1256.AdcNow[7] = ADS1256_ReadData();	
+		}
+		else
+		{
+			g_tADS1256.AdcNow[g_tADS1256.Channel-1] = ADS1256_ReadData();	
+		}
+
+		if (++g_tADS1256.Channel >= 8)
+		{
+			g_tADS1256.Channel = 0;
+		}
+	}
+	else	/*DiffChannal*/
+	{
+        
+        g_tADS1256.AdcNow[g_tADS1256.Channel] = ADS1256_ReadData();
+
+		//~ if (g_tADS1256.Channel == 0)
+		//~ {
+			//~ g_tADS1256.AdcNow[3] = ADS1256_ReadData();	
+		//~ }
+		//~ else
+		//~ {
+			//~ g_tADS1256.AdcNow[g_tADS1256.Channel-1] = ADS1256_ReadData();	
+		//~ }
+
+		//~ if (++g_tADS1256.Channel >= 4)
+		//~ {
+			//~ g_tADS1256.Channel = 0;
+		//~ }
+	}
+}
+
+
+/*
+*********************************************************************************************************
 *	name: ADS1256_Scan
 *	function: 
 *	parameter:NULL
@@ -765,6 +847,28 @@ uint8_t ADS1256_Scan(void)
 
 	return 0;
 }
+
+
+/*
+*********************************************************************************************************
+*	name: ADS1256_Scan
+*	function: 
+*	parameter:NULL
+*	The return value:  1
+*********************************************************************************************************
+*/
+uint8_t ADS1256_Scan_Channel(void)
+{
+	if (DRDY_IS_LOW())
+	{
+		ADS1256_ISR_Channel();
+		return 1;
+	}
+
+	return 0;
+}
+
+
 /*
 *********************************************************************************************************
 *	name: Write_DAC8552
@@ -836,7 +940,7 @@ int  adcStart(int argc, char *par1, char *par2, char *par3)
     bcm2835_spi_begin();
     bcm2835_spi_setBitOrder(BCM2835_SPI_BIT_ORDER_LSBFIRST );     // The default
     bcm2835_spi_setDataMode(BCM2835_SPI_MODE1);                   // The default
-    bcm2835_spi_setClockDivider(BCM2835_SPI_CLOCK_DIVIDER_1024); // THE DEFAULT IS 1024!!!!!! The ADC is faster, but may become unstable at lower values
+    bcm2835_spi_setClockDivider(BCM2835_SPI_CLOCK_DIVIDER_256); // THE DEFAULT IS 1024!!!!!! The ADC is faster, but may become unstable at lower values
     bcm2835_gpio_fsel(SPICS, BCM2835_GPIO_FSEL_OUTP);//
     bcm2835_gpio_write(SPICS, HIGH);
     bcm2835_gpio_fsel(DRDY, BCM2835_GPIO_FSEL_INPT);
@@ -1026,8 +1130,8 @@ long int readChannel(long int ch){
     // 4 values are repeated in the differential mode
     // for (i = 0; i < 4; i++)
     // {
-    while((ADS1256_Scan() == 0));
-    bsp_DelayUS(1);	
+    while((ADS1256_Scan_Channel() == 0));
+    bsp_DelayUS(1);
     // }
     
     ChValue =  (long) ADS1256_GetAdc(ch);

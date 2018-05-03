@@ -15,6 +15,8 @@ import matplotlib.pyplot as plt
 # SPS values:   500, 1000,  2000,  3750,  7500,  15000,  30000
 ads1256.start("1","30000")
 
+time.sleep(0.1)
+
 channel = 0
 n_samples = 5000
 
